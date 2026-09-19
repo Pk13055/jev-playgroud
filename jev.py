@@ -44,10 +44,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         epilog=(
             "Examples:\n"
             '  %(prog)s -m noul -q "Is the sky blue?" -s ""\n'
-            '  %(prog)s -m noul -q "Does the customer request a refund?" -s ./ticket.txt\n'
-            '  %(prog)s -m choice --choices calm,frustrated,angry -q "What is the tone?" -i ./ticket.txt\n'
+            '  %(prog)s -m noul -q "Does the customer request a refund?" -s "I was charged twice."\n'
+            '  %(prog)s -m choice --choices calm,frustrated,angry -q "What is the tone?" -s ./ticket.txt\n'
             "\n"
-            "-s/--state/-i is an empty string, or a path to a text file to read as state.\n"
+            "-s/--state/-i is an empty string, inline text, or a path to a text file.\n"
             "Requires TYPESAFE_API_KEY."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -71,7 +71,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--state",
         dest="state",
         default="",
-        help='empty string, or path to a text file to use as state',
+        help="empty string, inline text, or path to a text file to use as state",
     )
     parser.add_argument(
         "--choices",
@@ -91,10 +91,12 @@ def load_state(value: str) -> str:
     if value == "":
         return ""
     path = Path(value)
-    try:
-        return path.read_text()
-    except OSError as error:
-        raise SystemExit(f"error: cannot read state file {path}: {error}") from error
+    if path.is_file():
+        try:
+            return path.read_text()
+        except OSError as error:
+            raise SystemExit(f"error: cannot read state file {path}: {error}") from error
+    return value
 
 
 def build_question(mode: Mode, query: str, choices: list[str] | None) -> Noul | Choice | Score:
