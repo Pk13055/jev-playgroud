@@ -271,3 +271,123 @@ Spamminess:
   }
 }
 ```
+
+### Financial Use Cases
+
+Accounting, credit, and investment banking judgments on short snippets.
+
+Duplicate payment (AP):
+
+```bash
+./jev.py -m noul -q "Does this look like a request to pay an invoice that was already paid?" -s "Vendor Acme sent invoice 4419 for $18,400 on March 3. AP already paid invoice 4419 on March 5. The vendor emailed again asking when they will be paid."
+```
+
+```json
+{
+  "type": "noul",
+  "noul": 0.97
+}
+```
+
+Earnings vs consensus:
+
+```bash
+./jev.py -m noul -q "Did this company miss consensus earnings per share?" -s "Q3 EPS came in at $1.12 versus consensus of $1.31. Revenue was in line with estimates."
+```
+
+```json
+{
+  "type": "noul",
+  "noul": 0.98
+}
+```
+
+Cash-flow classification:
+
+```bash
+./jev.py -m choice --choices operating,investing,financing -q "How should this cash outflow be classified on the cash flow statement?" -s "The company paid $40 million to acquire a warehouse and the land under it."
+```
+
+```json
+{
+  "type": "choice",
+  "choice": "investing",
+  "confidence": 1.0,
+  "probabilities": {
+    "investing": 1.0,
+    "operating": 0.0,
+    "financing": 0.0
+  }
+}
+```
+
+Investment banking product:
+
+```bash
+./jev.py -m choice --choices ma_advisory,ecm,dcm,leveraged_finance,other -q "Which investment banking product does this client request describe?" -s "We want to raise $500 million of senior unsecured notes to refinance the 2027 maturity and fund a small bolt-on."
+```
+
+```json
+{
+  "type": "choice",
+  "choice": "dcm",
+  "confidence": 0.99,
+  "probabilities": {
+    "leveraged_finance": 0.0,
+    "ecm": 0.0,
+    "dcm": 1.0,
+    "ma_advisory": 0.0,
+    "other": 0.0
+  }
+}
+```
+
+Borrower credit risk (score can land between levels):
+
+```bash
+./jev.py -m score --choices "low,moderate,elevated,severe" -q "How severe is this borrower's credit risk?" -s "Leverage is 6.8x EBITDA, interest coverage is 1.3x, and cash has declined for three quarters. The revolver is 90% drawn."
+```
+
+```json
+{
+  "type": "score",
+  "score": 2.73,
+  "confidence": 0.73,
+  "legend": {
+    "0": "low",
+    "1": "moderate",
+    "2": "elevated",
+    "3": "severe"
+  },
+  "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.27,
+    "3": 0.73
+  }
+}
+```
+
+Quality of earnings:
+
+```bash
+./jev.py -m score --choices "low quality,mixed,high quality" -q "How high is the quality of these reported earnings?" -s "Operating cash flow was $12 million while net income was $48 million. Most of the gap is an increase in receivables and a one-time gain on a building sale."
+```
+
+```json
+{
+  "type": "score",
+  "score": 0.03,
+  "confidence": 0.95,
+  "legend": {
+    "0": "low quality",
+    "1": "mixed",
+    "2": "high quality"
+  },
+  "probabilities": {
+    "0": 0.97,
+    "1": 0.03,
+    "2": 0.0
+  }
+}
+```
